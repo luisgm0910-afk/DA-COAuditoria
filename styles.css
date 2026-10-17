@@ -1,0 +1,923 @@
+/* ========================================================================= */
+/* 1. VARIABLES GLOBALES Y RESET BASE                                        */
+/* ========================================================================= */
+:root {
+    /* Paleta Principal */
+    --primary: #2c3e50;
+    --primary-hover: #34495e;
+    --accent: #3498db;
+    --success: #27ae60;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --danger-hover: #c0392b;
+
+    /* Colores de Módulos / Acciones */
+    --postventa: #9b59b6;
+    --etiqueta: #8e44ad;
+    --gerencia: #e67e22;
+    --neutral-dark: #1a252f;
+
+    /* Neutros, Fondos y Bordes */
+    --bg: #f4f7f9;
+    --bg-card: #ffffff;
+    --bg-subtle: #f8f9fa;
+    --border-light: #ecf0f1;
+    --border-dark: #3e4f5f;
+    --text-muted: #7f8c8d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: var(--bg);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Animaciones Reutilizables */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ========================================================================= */
+/* 2. PANTALLA DE INICIO (HUB DE ACCESOS DIRECTOS)                          */
+/* ========================================================================= */
+#pantallaInicio {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, var(--primary) 0%, var(--neutral-dark) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    color: white;
+    text-align: center;
+    transition: opacity 0.5s ease;
+}
+
+.hero-section {
+    max-width: 900px;
+    padding: 20px;
+    animation: fadeIn 1s ease;
+}
+
+.logo-inicio {
+    font-size: 64px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: var(--accent);
+    letter-spacing: -2px;
+}
+
+.logo-inicio span {
+    color: white;
+}
+
+.tagline {
+    font-size: 1.2rem;
+    color: #bdc3c7;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+/* Botones de Accesos Principales */
+.accesos-principales {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-acceso {
+    padding: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 180px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-acceso:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Estilos de botones específicos de la pantalla de inicio */
+.btn-ia-ini {
+    background-color: var(--warning);
+    color: var(--primary);
+}
+
+.btn-resguardo-ini {
+    background-color: var(--accent);
+    color: white;
+}
+
+.btn-archivos-ini {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-postventa-ini {
+    background-color: var(--postventa);
+    color: white;
+}
+
+.btn-etiqueta-ini {
+    background-color: var(--etiqueta);
+    color: white;
+}
+
+.btn-gerencia-ini {
+    background-color: var(--gerencia);
+    color: white;
+}
+
+
+/* ========================================================================= */
+/* 3. ESTRUCTURA Y LAYOUT PRINCIPAL (HEADER Y SIDEBAR)                       */
+/* ========================================================================= */
+#contenedorPrincipal {
+    display: none;
+    width: 100%;
+    height: 100vh;
+}
+
+/* Barra Lateral (Sidebar) */
+.sidebar {
+    width: 250px;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding-top: 15px;
+    flex-shrink: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 2000;
+    font-size: 11px;
+    transition: transform 0.3s ease;
+    will-change: transform;
+}
+
+.sidebar.guardada {
+    transform: translateX(-100%);
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border-dark);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Tabs / Menú Lateral */
+.tabs-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tab {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: background-color 0.2s ease;
+    text-transform: uppercase;
+    font-weight: 500;
+    display: block;
+    width: 100%;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.tab:hover {
+    background: var(--primary-hover);
+    color: white;
+}
+
+.tab:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Áreas de Contenido y Cabecera (Header) */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 25px;
+    position: relative;
+    width: 100%;
+    transition: width 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+#btnToggleSidebarPC {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 4px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#btnToggleSidebarPC:hover {
+    background-color: var(--primary-hover);
+    color: var(--accent);
+}
+
+#btnToggleSidebarPC:active {
+    transform: scale(0.95);
+}
+
+#btnMenuMovil {
+    display: none;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 15px;
+}
+
+#overlayMenu {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1500;
+}
+
+
+/* ========================================================================= */
+/* 4. COMPONENTES REUTILIZABLES (BOTONES, MENÚS DROPDOWN Y TARJETAS)       */
+/* ========================================================================= */
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 10px;
+    text-transform: uppercase;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    margin-right: 5px;
+}
+
+.btn:hover {
+    filter: brightness(1.05);
+}
+
+.btn-subir {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-crear {
+    background-color: var(--accent);
+    color: white;
+}
+
+.btn-ver {
+    background-color: var(--accent);
+    color: white;
+}
+
+.btn-descargar {
+    background-color: var(--postventa);
+    color: white;
+}
+
+.btn-borrar {
+    background-color: var(--danger);
+    color: white;
+}
+
+/* Desplegable de Gestión */
+.dropdown-gestion {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    background: var(--bg-card);
+    min-width: 210px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 3000;
+    border-radius: 8px;
+    top: 100%;
+    right: 0;
+    border: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.item-dropdown {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--primary);
+    border-bottom: 1px solid var(--bg);
+    transition: background-color 0.2s, color 0.2s;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-dropdown:hover {
+    background: var(--bg-subtle);
+    color: var(--accent);
+}
+
+.item-dropdown:last-child {
+    border-bottom: none;
+}
+
+/* Contenedores tipo Card */
+.card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+
+/* ========================================================================= */
+/* 5. MÓDULO AUDITOR (VALIDADOR DE STOCK Y TABLAS)                          */
+/* ========================================================================= */
+#vistaValidadorInterno {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Tablas Principales de Registros */
+table.principal {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+table.principal th {
+    text-align: left;
+    padding: 15px 10px;
+    border-bottom: 2px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+table.principal td {
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+    color: var(--primary);
+}
+
+/* Barra de Filtros y Desplegables */
+.btn-desplegable-filtros {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-hover);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px;
+    text-transform: uppercase;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    display: block;
+    text-align: center;
+}
+
+.barra-filtros-validador {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    background: var(--bg-subtle);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 5px;
+    align-items: end;
+}
+
+.barra-filtros-validador.visible {
+    display: grid !important;
+}
+
+.campo-filtro-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.campo-filtro-grupo label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filtro-columna-validador {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+}
+
+/* Entradas Limpiables y Botones de Borrado */
+.contenedor-input-limpiable {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.contenedor-input-limpiable input {
+    flex-grow: 1;
+}
+
+.btn-limpiar-filtro {
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-limpiar-filtro:hover {
+    background: var(--danger-hover);
+}
+
+/* Conteo por Zonas de Inventario */
+.contenedor-botones-zonas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    justify-content: flex-start;
+}
+
+.btn-zona-conteo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    height: 35px;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.btn-zona-conteo:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.btn-z-prc {
+    background-color: var(--warning) !important;
+    color: #000 !important;
+}
+
+.btn-z-pdv {
+    background-color: var(--accent) !important;
+}
+
+.btn-z-alm {
+    background-color: var(--text-muted) !important;
+}
+
+.btn-z-tras {
+    background-color: var(--gerencia) !important;
+}
+
+.btn-zona-opcion {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    background-color: var(--bg-subtle);
+    color: #555;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-zona-opcion.activa {
+    background-color: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ========================================================================= */
+/* 6. MÓDULO GERENCIA (DASHBOARDS, KPIs Y REPORTES)                         */
+/* ========================================================================= */
+.grid-reporte {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-top: 4px solid var(--accent);
+    text-align: center;
+}
+
+.stat-val {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary);
+    display: block;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+
+/* ========================================================================= */
+/* 7. MÓDULO INTELIGENCIA ARTIFICIAL (CHAT Y ASISTENTE EXPRESS)             */
+/* ========================================================================= */
+#seccionIA {
+    display: none;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.chat-header-int {
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    border-bottom: 3px solid var(--warning);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.msj {
+    padding: 12px 18px;
+    border-radius: 8px;
+    max-width: 80%;
+    font-size: 14px;
+}
+
+.msj-ia {
+    background-color: #ebf5fb;
+    align-self: flex-start;
+    border-left: 4px solid var(--accent);
+}
+
+.msj-user {
+    background-color: #d5f5e3;
+    align-self: flex-end;
+}
+
+#reader {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: none;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--accent);
+    min-height: 250px;
+    background: #000;
+}
+
+
+/* ========================================================================= */
+/* 8. VENTANAS MODALES Y TABLAS INTERACTIVAS DE EDICIÓN                    */
+/* ========================================================================= */
+.modal-base {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 6000;
+    padding: 10px;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-container {
+    background: var(--bg-card);
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    background: #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.modal-body {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 20px;
+}
+
+.tabla-interactiva {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--bg-card);
+}
+
+.tabla-interactiva td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 120px;
+    outline: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tabla-interactiva td:focus {
+    background: #fffde7;
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+
+/* ========================================================================= */
+/* 9. ADAPTABILIDAD MÓVIL (MEDIA QUERIES)                                    */
+/* ========================================================================= */
+@media (max-width: 768px) {
+
+    /* Ajustes generales de layout */
+    #btnToggleSidebarPC {
+        display: none;
+    }
+
+    #btnMenuMovil {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+        transform: translateX(-100%);
+        width: 250px;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .header {
+        padding: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    #controlesHeader {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        padding-bottom: 5px;
+        overflow: visible;
+    }
+
+    .logo-inicio {
+        font-size: 40px;
+    }
+
+    .btn-acceso {
+        width: 140px;
+        padding: 15px;
+    }
+
+    .main-content {
+        padding: 12px;
+    }
+
+    /* Filtros Validador Móvil */
+    .barra-filtros-validador {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    /* Transformación de Tablas a tarjetas estilo App */
+    #tablaDinamicaValidadorInterno thead {
+        display: none;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr {
+        display: block;
+        background: var(--bg-card);
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td {
+        display: block;
+        border: none;
+        padding: 4px 0;
+        text-align: left;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(1) {
+        font-size: 14px;
+        color: var(--accent);
+        border-bottom: 1px dashed #edf2f7;
+        padding-bottom: 4px;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(2) {
+        font-weight: bold;
+        font-size: 14px;
+        color: var(--primary);
+        padding-top: 6px;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(3),
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(4),
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(5) {
+        padding-left: 90px;
+        position: relative;
+        min-height: 20px;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(3)::before {
+        content: "Existencia:";
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 10px;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(4)::before {
+        content: "Precio:";
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 10px;
+    }
+
+    #tablaDinamicaValidadorInterno tbody tr td:nth-child(5)::before {
+        content: "Diferencia:";
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 10px;
+    }
+}
+
+
+/* Visor Escáner Optimizado */
+#readerModalValidador {
+    width: 100%;
+    min-height: 250px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+#readerModalValidador video {
+    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+}

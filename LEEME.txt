@@ -1,0 +1,28 @@
+DA+CO - Sistema central corregido
+=================================
+
+Archivos:
+- index.html: página principal (renombrada desde PaginaV3.3(3).html)
+- funciones.js: lógica del sistema
+- styles.css: estilos
+- api.php: API de lectura/guardado de database.json
+- guardar_backup.php: endpoint de respaldo automático
+- database.json: datos actuales aportados
+
+Correcciones aplicadas:
+1. api.php valida el JSON antes de reemplazar la base, verifica la estructura básica de los registros, responde con códigos HTTP claros y guarda mediante archivo temporal para reducir el riesgo de dejar el JSON truncado.
+2. guardar_backup.php valida método y JSON y usa escritura temporal antes de reemplazar el respaldo.
+3. funciones.js construye las filas principales con textContent en lugar de insertar nombres/categorías/fechas como HTML, reduciendo riesgo de inyección al mostrar nombres de documentos.
+4. funciones.js verifica la confirmación JSON del servidor al guardar.
+5. Se conservaron la base de datos y los módulos existentes; no se eliminaron registros ni se rediseñaron las funciones de conteo.
+
+Instalación:
+- Haz una copia de seguridad de la carpeta actual antes de reemplazar nada.
+- Sube todos estos archivos a la misma carpeta del sitio, conservando los nombres indicados.
+- El servidor debe ejecutar PHP y permitir escritura en la carpeta de database.json y backup_auto.json.
+- No abras index.html como archivo local: usa la dirección del servidor para que api.php funcione.
+- Prueba primero cargar la página, abrir un registro, cargar un Excel de prueba y confirmar que se guarda.
+
+Nota importante de seguridad:
+- El sistema todavía usa claves escritas en el JavaScript y los endpoints no tienen autenticación/autorización de servidor. Esta entrega no debe exponerse directamente a Internet sin proteger el acceso en el servidor.
+- La recuperación automática de backup_auto.json depende de localStorage; no sustituye una copia externa de database.json. Guarda también una copia fuera del servidor.

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporación DA+CO - Sistema Central (Luis García)</title>
+    
+    <!-- Librerías Externas -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="funciones.js"></script>
+   
+</head>
+<body>
+
+<div id="overlayMenu" onclick="toggleMenu()"></div>
+
+<!-- ========================================================================= -->
+<!-- 1. PANTALLA DE INICIO / NAVEGACIÓN PRINCIPAL (HUB DE ACCESOS DIRECTOS)   -->
+<!-- ========================================================================= -->
+<div id="pantallaInicio">
+    <div class="hero-section">
+        <div class="logo-inicio">DA<span>+</span>CO</div>
+        <div class="tagline">Panel de Control Operativo · Auditoría</div>
+        <div class="accesos-principales">
+            <!-- Botón IA -->
+            <button class="btn-acceso btn-ia-ini" onclick="accederModo('SOLO_IA')"><i>🤖</i>ASISTENTE IA</button>
+
+            <!-- Accesos Rápidos de Operación / Registro -->
+            <button class="btn-acceso btn-resguardo-ini" onclick="abrirPuenteEtiqueta()"><i>🏷️</i>Etiqueta/Ciclico</button>
+            <button class="btn-acceso btn-resguardo-ini" onclick="abrirPuentePrecios()"><i>📦</i>Comparador Precios</button>
+            <button class="btn-acceso btn-resguardo-ini" onclick="abrirPuentePostventa()"><i>📦</i>Post Venta</button>
+
+            <button class="btn-acceso btn-resguardo-ini" onclick="abrirPuenteResguardo()"><i>📦</i>Resguardo Mercancía</button>
+            <button class="btn-acceso btn-etiqueta-ini" onclick="abrirPuenteEtiquetas()"><i>🏷️</i>IMPRIMIR ETIQUETA</button>
+
+            <!-- Módulos con Autenticación / Clave -->
+            <button class="btn-acceso btn-gerencia-ini" onclick="verificarClave('GERENCIA')"><i>💼</i>Gerencia Tienda</button>
+            <button class="btn-acceso btn-archivos-ini" onclick="verificarClave('AUDITOR')"><i>🔐</i>Gestión Auditoria</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. LAYOUT PRINCIPAL (MENÚ NAVEGACIÓN Y CABECERA DEL SISTEMA)             -->
+<!-- ========================================================================= -->
+<div id="contenedorPrincipal">
+    <!-- Barra Lateral -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2 id="nombreUsuarioSidebar">🏠 Sistema Auditoria</h2></div>
+        <div class="tabs-vertical" id="menuLateral"></div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <!-- Cabecera / Controles Superiores -->
+        <div class="header" id="mainHeader">
+            <div style="display: flex; align-items: center;">
+                <button id="btnMenuMovil" onclick="toggleMenu()">☰</button>
+                <button id="btnToggleSidebarPC" onclick="toggleSidebarPC()" title="Guardar o Sacar Menú Lateral">
+                    ⬅️ Ocultar Menú
+                </button>
+                <h1 id="tituloVista" style="margin:0; font-size: 20px; color: #2c3e50;">Bienvenido</h1>
+            </div>
+            
+            <div id="controlesHeader" style="display: none; gap: 5px;">
+                <button class="btn btn-subir" id="btnCargarCiclicoDirecto" onclick="document.getElementById('inputCiclicoDirectoGerencia').click()" style="display: none; min-width: 140px; background-color: var(--success);">
+                    📊 CARGAR CÍCLICO
+                </button>
+
+                <div class="dropdown-gestion" id="contendorDropdownGestion">
+                    <button class="btn btn-crear" onclick="toggleMenuGestion()" id="btnAccionPrincipal" style="min-width: 140px; background-color: var(--accent);">
+                        ⚡ GESTIÓN ▼
+                    </button>
+                    <div id="menuGestionUnificado" class="menu-dropdown">
+                        <div id="opcionCrearManual" class="item-dropdown" onclick="abrirEditorNuevo(); toggleMenuGestion()">📝 CREAR DOCUMENTO MANUAL</div>
+                        <div id="opcionSubirManual" class="item-dropdown" onclick="document.getElementById('inputSubidaManual').click(); toggleMenuGestion()">📄 SUBIR EXCEL (ARCHIVO)</div>
+                        <div id="opcionCargaMasiva" class="item-dropdown" style="color: var(--success); border-top: 2px solid #f4f7f9;" onclick="document.getElementById('inputCargaMasiva').click(); toggleMenuGestion()">📁 CARGAR INVENTARIO + PRECIOS</div>
+                    </div>
+                </div>
+                <button class="btn btn-borrar" onclick="cerrarSesion()">Salir</button>
+            </div>
+        </div>
+        
+        <!-- Entradas de Archivo Ocultas (Inputs de carga) -->
+        <input type="file" id="inputCiclicoDirectoGerencia" style="position: absolute; left: -9999px;" onchange="procesarCiclicoGerencia(this)">
+        <input type="file" id="inputCargaMasiva" multiple style="position: absolute; left: -9999px;" onchange="procesarCargaMasiva(this)">
+        <input type="file" id="inputSubidaManual" style="position: absolute; left: -9999px;" onchange="abrirModalVistaPrevia(this)">
+        <input type="file" id="inputArchivoValidadorInterno" style="position: absolute; left: -9999px;" onchange="procesarExcelValidadorInterno(this)">
+
+
+        <!-- ========================================================================= -->
+        <!-- 3. MÓDULO AUDITOR (REGISTROS, TABLAS Y VALIDADOR DE STOCK DINÁMICO)       -->
+        <!-- ========================================================================= -->
+        
+        <!-- Vista Registros Generales del Auditor -->
+        <div class="card" id="vistaTabla" style="display: none;">
+            <table class="principal" id="tablaRegistros">
+                <thead><tr><th>ARCHIVO</th><th>CATEGORÍA</th><th>FECHA</th><th>GESTIÓN</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Vista Validador / Conteo de Stock por Zonas (Físico vs Sistema) -->
+        <div id="vistaValidadorInterno">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="margin:0 0 5px 0; color: var(--primary);">Herramienta de Consulta Dinámica</h3>
+                </div>
+                <!-- Busca este bloque dentro de #vistaValidadorInterno -->
+<div style="display: flex; gap: 10px; flex-wrap: wrap;"> 
+    <button class="btn" onclick="abrirModalEscanerValidador()" style="padding: 12px 20px; font-size: 11px; background-color: #34495e; color: white;">
+        📷 ESCANEAR CÓDIGO
+    </button>
+
+    <!-- 👇 AGREGA ESTE BOTÓN AQUÍ 👇 -->
+    <button class="btn" onclick="mostrarProgresoAuditoria()" style="padding: 12px 20px; font-size: 11px; background-color: #27ae60; color: white;">
+        📊 PROGRESO
+    </button>
+
+    <button class="btn btn-subir" onclick="document.getElementById('inputArchivoValidadorInterno').click()" style="padding: 6px 15px; font-size: 10px;">
+        📁 SELECCIONAR EXCEL
+    </button>
+    <button class="btn btn-borrar" onclick="reiniciarValidadorCompleto()" style="padding: 6px 12px; font-size: 10px; background-color: #95a5a6;" title="Borrar datos de la memoria"> 
+        🗑️ REINICIAR TODO 
+    </button>
+</div>
+            </div>
+
+            <!-- Filtros de Auditoría para SKU, Línea, Modelo y Almacén -->
+            <button class="btn-desplegable-filtros" id="btnToggleFiltrosVal" onclick="toggleBarraFiltros()">🔍 BUSCAR / FILTRAR DATA ▼</button>
+
+            <div class="barra-filtros-validador" id="barraFiltrosValidadorContenedor">
+                <div class="campo-filtro-grupo">
+                    <label>Código (SKU)</label>
+                    <div class="contenedor-input-limpiable">
+                        <input type="text" id="filtroValSKU" class="filtro-columna-validador" placeholder="Buscar SKU..." oninput="filtrarTablaValidadorInterno()">
+                        <button type="button" class="btn-limpiar-filtro" onclick="limpiarCampoFiltro('filtroValSKU')" title="Limpiar SKU">✖</button>
+                    </div>
+                </div>
+                <div class="campo-filtro-grupo">
+                    <label>Línea / Categoría</label>
+                    <select id="filtroValLineaInterna" class="filtro-columna-validador" onchange="filtrarTablaValidadorInterno()">
+                        <option value="">TODAS LAS LÍNEAS</option>
+                    </select>
+                </div>
+                <div class="campo-filtro-grupo">
+                    <label>Artículo / Descripción</label>
+                    <div class="contenedor-input-limpiable">
+                        <input type="text" id="filtroValArticulo" class="filtro-columna-validador" placeholder="Buscar por modelo..." oninput="filtrarTablaValidadorInterno()">
+                        <button type="button" class="btn-limpiar-filtro" onclick="limpiarCampoFiltro('filtroValArticulo')" title="Limpiar Descripción">✖</button>
+                    </div>
+                </div>
+                <div class="campo-filtro-grupo">
+                    <label>Filtro Almacén</label>
+                    <select id="filtroValAlmacen" class="filtro-columna-validador" onchange="filtrarTablaValidadorInterno()">
+                        <option value="">TODOS LOS ALMACENES</option>
+                    </select>
+                </div>
+                <div class="campo-filtro-grupo">
+                    <button class="btn btn-borrar" style="width: 100%; padding: 10px; margin: 0; background-color: #7f8c8d;" onclick="limpiarFiltrosBusquedaValidador()">
+                        🧹 LIMPIAR TODO
+                    </button>
+                </div>
+                <!-- En la sección de la barra de filtros del validador -->
+<div class="campo-filtro-grupo">
+    <button class="btn btn-subir" id="btnCierreParcial" style="background-color: #e67e22; width: 100%; padding: 10px; margin: 0; display: none;" onclick="guardarCierreParcialValidador()">
+        ⏸️ CIERRE PARCIAL (<span id="contadorItemsParcial">0</span>)
+    </button>
+</div>
+<div class="campo-filtro-grupo">
+    <button class="btn btn-subir" id="btnFinalizarConteoMasivo" style="background-color: #27ae60; width: 100%; padding: 10px; margin: 0; display: none;" onclick="finalizarConteoMasivoValidador()">
+        💾 FINALIZAR CONTEO (<span id="contadorItemsConteo">0</span>)
+    </button>
+</div>
+            </div>
+
+            <!-- Tabla Interactiva de Conteo y Comparación -->
+            <div class="card" id="contenedorTablaValidador" style="display: none; max-height: 550px; overflow-y: auto;">
+                <table class="principal" id="tablaDinamicaValidadorInterno">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">CÓDIGO (SKU)</th>
+                            <th style="width: 35%;">ARTÍCULO / DESCRIPCIÓN</th>
+                            <th style="width: 10%;">EXISTENCIA</th> 
+                            <th style="width: 10%;">PRECIO</th> 
+                            <th style="width: 10%;">DIFERENCIA</th>
+                            <th style="width: 20%; text-align: center;">VALIDACIÓN CENTRAL ZONAS</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- 4. MÓDULO GERENCIA (REPORTES, ESTADÍSTICAS Y GRÁFICOS)                   -->
+        <!-- ========================================================================= -->
+        <div id="vistaReporte" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin:0; color: var(--primary);">Resumen Detallado Operativo</h2>
+                <button class="btn btn-descargar" onclick="generarPDFResumenMensual()" style="padding: 10px 20px;">📄 DESCARGAR PDF DETALLADO</button>
+            </div>
+            
+            <div class="grid-reporte" id="statsReporte"></div>
+            
+            <!-- Dashboard y Gráfico para la toma de decisiones gerenciales -->
+            <div class="card" style="background: white; min-height: 350px;">
+                <h3 style="margin-top:0; color:var(--primary); font-size: 14px;">DOCS. GUARDADOS POR CATEGORÍA</h3>
+                <canvas id="graficoOperativo" style="max-height: 300px; width: 100%;"></canvas>
+            </div>
+
+            <!-- Tabla Resumen Gerencial de Volúmenes y Cierres -->
+            <div class="card">
+                <h3>Detalle de Actividad y Volúmenes</h3>
+                <table class="principal" id="tablaReporteDetalle">
+                    <thead><tr><th>CATEGORÍA</th><th>ESTADÍSTICAS</th><th>ÚLTIMA ACTUALIZACIÓN</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 5. MÓDULO INTELIGENCIA ARTIFICIAL (CONSULTA DE PRECIOS Y LOGS)           -->
+        <!-- ========================================================================= -->
+        <div id="seccionIA">
+            <div class="chat-header-int">
+                <span>🤖 CONSULTA DE PRECIOS CON IA</span>
+                <div>
+                    <button class="btn" style="background: var(--danger); color:white" onclick="cerrarSesion()">CERRAR</button>
+                </div>
+            </div>
+            
+            <div id="reader"></div>
+            
+            <!-- Caja Chat / Historial del Asistente -->
+            <div class="chat-box" id="cajaMensajes"></div>
+            
+            <!-- Panel de Entrada de Consulta Express / Escáner directo -->
+            <div style="display:flex; padding:15px; border-top:1px solid #eee; background: #f9f9f9; align-items: center; gap: 8px;">
+                <button onclick="alternarEscaner()" class="btn" style="background: #34495e; color: white; padding: 12px; border-radius: 8px; font-size: 18px;" title="Activar Cámara Scanner">📷</button>
+                <input type="text" id="inputIA" placeholder="Ingrese SKU o Modelo..." style="flex-grow:1; padding:12px; border:1px solid #ddd; border-radius:8px; font-size: 16px;" onkeypress="if(event.key === 'Enter') procesarConsultaIA()">
+                <button onclick="procesarConsultaIA()" class="btn btn-subir" style="padding: 12px 20px;">ENVIAR</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- 6. MODALES DEL SISTEMA (EDICIÓN, ESCÁNER, CONTEO Y ARCHIVOS)             -->
+<!-- ========================================================================= -->
+
+<!-- Modal Escáner de Barra para Auditoría -->
+<div id="modalEscanerValidador" class="modal-base">
+    <div class="modal-container" style="max-width: 450px; height: auto; padding: 20px; text-align: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: var(--primary); font-size: 16px;">📷 Escáner de Producto</h3>
+            <span onclick="cerrarModalEscanerValidador()" style="cursor: pointer; font-size: 24px; font-weight: bold; color: #888;">&times;</span>
+        </div>
+        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Apunta al código de barras o sube una imagen si la cámara no enciende.</p>
+        <div id="readerModalValidador" style="width: 100%; border-radius: 8px; overflow: hidden; background: #000; min-height: 220px; border: 2px dashed var(--accent); margin-bottom: 15px;"></div>
+        <div style="border-top: 1px dashed #ccc; padding-top: 12px; margin-bottom: 10px;">
+            <input type="file" id="inputFotoModal" accept="image/*" style="display:none;" onchange="procesarFotoModalValidador(this)">
+            <button class="btn" onclick="document.getElementById('inputFotoModal').click()" style="background-color: #27ae60; color: white; width: 100%; padding: 12px; font-size: 11px;">
+                🖼️ SUBIR / TOMAR FOTO DEL CÓDIGO
+            </button>
+        </div>
+        <button class="btn btn-borrar" onclick="cerrarModalEscanerValidador()" style="width: 100%; padding: 10px; font-size: 11px;">
+            CANCELAR
+        </button>
+    </div>
+</div>
+
+<!-- Modal Ventana de Progreso y Calidad de Auditoría -->
+<div id="modalProgresoAuditoria" class="modal-base">
+    <div class="modal-container" style="max-width: 480px; height: auto; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: var(--primary); font-size: 16px;">📈 Progreso y Calidad del Conteo</h3>
+            <span onclick="cerrarModalProgreso()" style="cursor: pointer; font-size: 24px; font-weight: bold; color: #888;">&times;</span>
+        </div>
+        
+        <!-- Bloque 1: Avance General -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div style="background: #ebf5fb; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid var(--accent);">
+                <span style="font-size: 10px; color: #7f8c8d; font-weight: bold; text-transform: uppercase;">SKUs Auditados</span>
+                <div style="font-size: 16px; font-weight: 800; color: var(--primary); margin: 3px 0;" id="progresoSKUTexto">0 de 0</div>
+                <div style="font-size: 12px; font-weight: bold; color: var(--accent);" id="progresoSKUPorcentaje">0%</div>
+            </div>
+
+            <div style="background: #e8f8f5; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid var(--success);">
+                <span style="font-size: 10px; color: #7f8c8d; font-weight: bold; text-transform: uppercase;">Unidades Físicas</span>
+                <div style="font-size: 16px; font-weight: 800; color: var(--primary); margin: 3px 0;" id="progresoCantTexto">0 de 0</div>
+                <div style="font-size: 12px; font-weight: bold; color: var(--success);" id="progresoCantPorcentaje">0%</div>
+            </div>
+        </div>
+
+        <h4 style="margin: 10px 0 8px 0; font-size: 12px; color: #555; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 4px;">
+            🎯 Cuadrante de Calidad (SKUs Contados)
+        </h4>
+
+        <!-- Bloque 2: Desglose de Calidad -->
+        <!-- Bloque 2: Desglose de Calidad -->
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; margin-bottom: 15px;">
+    <!-- Cuadrados -->
+    <div onclick="filtrarPorEstadoAuditoria('CUADRADO')" style="background: #e8f8f5; padding: 8px; border-radius: 6px; border: 1px solid #a3e4d7; cursor: pointer;">
+        <span style="font-size: 10px; color: #27ae60; font-weight: bold;">✅ CUADRADOS</span>
+        <div style="font-size: 16px; font-weight: bold; color: #1e8449;" id="progresoCuadrados">0</div>
+        <span style="font-size: 9px; color: #7f8c8d;" id="progresoCuadradosPct">0%</span>
+    </div>
+
+    <!-- Faltantes -->
+    <div onclick="filtrarPorEstadoAuditoria('FALTANTE')" style="background: #fadbd8; padding: 8px; border-radius: 6px; border: 1px solid #f5b7b1; cursor: pointer;">
+        <span style="font-size: 10px; color: #c0392b; font-weight: bold;">🔻 FALTANTES</span>
+        <div style="font-size: 16px; font-weight: bold; color: #922b21;" id="progresoFaltantes">0</div>
+        <span style="font-size: 9px; color: #7f8c8d;" id="progresoFaltantesPct">0%</span>
+    </div>
+
+    <!-- Sobrantes -->
+    <div onclick="filtrarPorEstadoAuditoria('SOBRANTE')" style="background: #fef9e7; padding: 8px; border-radius: 6px; border: 1px solid #f9e79f; cursor: pointer;">
+        <span style="font-size: 10px; color: #d35400; font-weight: bold;">🔺 SOBRANTES</span>
+        <div style="font-size: 16px; font-weight: bold; color: #a04000;" id="progresoSobrantes">0</div>
+        <span style="font-size: 9px; color: #7f8c8d;" id="progresoSobrantesPct">0%</span>
+    </div>
+</div>
+
+<!-- Bloque 3: Pendientes -->
+<div onclick="filtrarPorEstadoAuditoria('PENDIENTE')" style="background: #f4f6f7; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #d5dbdb; cursor: pointer;">
+    <span style="font-size: 11px; color: #5d6d7e; font-weight: bold;">⚪ SKUs Sin Auditar (No Tocados):</span>
+    <span style="font-size: 13px; font-weight: bold; color: #2c3e50;" id="progresoPendientes">0 de 0</span>
+</div>
+
+        <button class="btn btn-borrar" onclick="cerrarModalProgreso()" style="width: 100%; margin-top: 15px; padding: 10px;">
+            CERRAR
+        </button>
+    </div>
+</div>
+    </div>
+</div>
+
+<!-- Modal Editor Interactivo de Tablas -->
+<div id="modalEditor" class="modal-base">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="tituloEditor">Nuevo Documento</h3>
+            <div>
+                <button class="btn btn-subir" onclick="agregarFila()">+ Fila</button>
+                <button class="btn btn-borrar" onclick="eliminarFila()">- Fila</button>
+                <button class="btn btn-subir" onclick="agregarColumna()">+ Col</button>
+                <button class="btn btn-borrar" onclick="eliminarColumna()">- Col</button>
+                <button class="btn btn-crear" onclick="prevenirColisionesGuardadoYCamposVacios()" style="background:#27ae60">💾 GUARDAR</button>
+                <button class="btn btn-borrar" onclick="cerrarEditor()">CANCELAR</button>
+            </div>
+        </div>
+        <div class="modal-body"><table class="tabla-interactiva" id="tablaEdicionContenido"></table></div>
+    </div>
+</div>
+
+<!-- Modal Subida / Vista Previa Manual -->
+<div id="modalSubidaManual" class="modal-base">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Confirmar y Clasificar</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <select id="selectDestinoManual" style="padding:8px; border-radius:5px; border:1px solid #ccc;"></select>
+                <button class="btn btn-subir" onclick="confirmarSubidaFinal()">💾 GUARDAR</button>
+                <button class="btn btn-borrar" onclick="cerrarModalManual()">CERRAR</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="nombreArchivoNuevo" placeholder="Nombre del archivo" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <table class="tabla-interactiva" id="tablaPreviewManual"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Opciones de Exportación y Descargas -->
+<div id="modalDescarga" class="modal-base">
+    <div class="modal-container" style="max-width:400px; height:auto;">
+        <div class="modal-header"><h3>Descargar Documento</h3></div>
+        <div class="modal-body" style="text-align:center;">
+            <button class="btn btn-subir" style="width:100%; margin-bottom:10px; padding:15px;" onclick="ejecutarDescarga('xlsx')">Excel (.xlsx)</button>
+            <button class="btn btn-descargar" style="width:100%; padding:15px;" onclick="ejecutarDescarga('pdf')">PDF (.pdf)</button>
+        </div>
+        <div style="padding:15px; text-align:center;">
+            <button class="btn btn-borrar" onclick="document.getElementById('modalDescarga').style.display='none'">CERRAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Conteo Físico por Zonas (PDVTA, Almacén, Traslado) -->
+<div id="modalIngresoCantidad" class="modal-base">
+    <div class="modal-container" style="max-width: 320px; height: auto; padding: 14px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-bottom: 10px;">
+            <h4 style="margin: 0; color: var(--primary); font-size: 14px;">
+                <span id="modalCantSKU_Txt" style="font-weight: bold;"></span>
+            </h4>
+            <span onclick="cerrarModalCantidadValidador()" style="cursor: pointer; font-size: 20px; font-weight: bold; color: #888; line-height: 1;">&times;</span>
+        </div>
+        <form id="formIngresoCantidad" onsubmit="confirmarCantidadModalValidador(event)">
+            <input type="hidden" id="modalCantSKU">
+            <input type="hidden" id="modalCantModelo">
+            <input type="hidden" id="modalCantExistencia">
+            <input type="hidden" id="modalCantAlmacen">
+            <input type="hidden" id="modalCantZona">
+            <div style="margin-bottom: 10px; text-align: left;">
+                <small id="modalCantDetalleProducto" style="display: block; color: #666; margin-bottom: 8px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></small>
+                
+                <label style="font-size: 10px; font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 4px;">ZONA A REGISTRAR:</label>
+                <div style="display: flex; gap: 4px; margin-bottom: 10px;">
+                    <button type="button" id="btnZonaPDV" class="btn-zona-opcion" onclick="actualizarCantidadSegunZonaSeleccionada('PDV')">PDVTA</button>
+                    <button type="button" id="btnZonaALM" class="btn-zona-opcion" onclick="actualizarCantidadSegunZonaSeleccionada('ALM')">ALMACÉN</button>
+                    <button type="button" id="btnZonaTRAS" class="btn-zona-opcion" onclick="actualizarCantidadSegunZonaSeleccionada('TRAS')">TRASLADO</button>
+                </div>
+                <label for="inputCantidadValidador" style="font-size: 10px; font-weight: bold; color: var(--primary); text-transform: uppercase;">CANTIDAD (<span id="modalCantZonaEtiqueta" style="color: var(--accent);">PDVTA</span>):</label>
+                <input type="number" id="inputCantidadValidador" class="filtro-columna-validador" style="font-size: 20px; text-align: center; font-weight: bold; margin-top: 2px; padding: 4px; height: 38px;" min="0" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px;">
+                <button type="button" class="btn btn-borrar" style="padding: 4px 10px; font-size: 11px;" onclick="cerrarModalCantidadValidador()">CANCELAR</button>
+                <button type="submit" class="btn btn-subir" style="padding: 4px 14px; font-size: 11px;">GUARDAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
